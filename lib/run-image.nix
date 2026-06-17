@@ -1,27 +1,25 @@
 {
-  writeShellScriptBin,
-  qemu,
+  pkgs,
   image,
-  OVMF,
+  architecture ? "x86_64",
+  extraStorageGB ? 8,
 }:
-
-writeShellScriptBin "repart-image-qemu" ''
+pkgs.writeShellScriptBin "repart-image-qemu" ''
   set -euo pipefail
 
-  DISK_IMAGE="demo-disk.raw"
+  DISK_IMAGE="$(mktemp).raw"
 
-  if [[ ! -f "$DISK_IMAGE" ]]; then
-    cp ${image}/image.raw "$DISK_IMAGE"
-    chmod +w "$DISK_IMAGE"
-    ${qemu}/bin/qemu-img resize -f raw "$DISK_IMAGE" "+10G"
-  fi
+  cp ${image}/image.raw "$DISK_IMAGE"
+  chmod +w "$DISK_IMAGE"
 
-  ${qemu}/bin/qemu-system-x86_64 \
+  ${pkgs.qemu}/bin/qemu-img resize -f raw "$DISK_IMAGE" "+${builtins.toString extraStorageGB}G"
+
+  ${pkgs.qemu}/bin/qemu-system-${architecture} \
     -smp 4 \
     -m 2048 \
     --enable-kvm \
     -cpu host \
-    -bios "${OVMF.fd}/FV/OVMF.fd" \
+    -bios "${pkgs.OVMF.fd}/FV/OVMF.fd" \
     -hda "$DISK_IMAGE" \
     -serial stdio \
     -display gtk

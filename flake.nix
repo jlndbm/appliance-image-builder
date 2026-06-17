@@ -35,6 +35,7 @@
           packages = {
 
             test-image = self.lib.makeImage {
+              inherit nixpkgs;
               system = "x86_64-linux";
               # Prefer /dev/disk/by-id/, but for qemu /dev/sda is fine.
               device = "/dev/sda";
@@ -58,6 +59,7 @@
             };
 
             default = pkgs.callPackage ./lib/run-image.nix {
+              inherit pkgs;
               image = self.packages.x86_64-linux.test-image;
             };
 
@@ -73,7 +75,8 @@
 
       flake = {
         nixosModules.default = import ./modules/image-builder.nix;
-        lib.makeImage = import ./lib/make-image.nix { inherit nixpkgs self; };
+        lib.makeImage = import ./lib/make-image.nix { inherit self; };
+        lib.runImage = import ./lib/run-image.nix;
       };
     };
 }

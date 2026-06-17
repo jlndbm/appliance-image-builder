@@ -1,6 +1,7 @@
-{ nixpkgs, self }:
+{ self }:
 
 {
+  nixpkgs,
   system,
   device,
   partitions ? { },
